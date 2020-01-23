@@ -12,6 +12,9 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application.
     id 'application'
+
+    // JavaFX stuff
+    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 repositories {
@@ -31,4 +34,23 @@ dependencies {
 application {
     // Define the main class for the application.
     mainClassName = 'ssolver.App'
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java"]
+            includes = ["**/*.css"]
+        }
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_13
+    targetCompatibility = JavaVersion.VERSION_13
+}
+
+javafx {
+    version = "13"
+    modules = [ 'javafx.controls', 'javafx.base', 'javafx.graphics' ]
 }
