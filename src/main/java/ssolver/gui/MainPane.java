@@ -8,17 +8,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import ssolver.io.BoardIO;
 
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 /**
  * Pretty "hacky" gui class. Mostly here to get the visual job done. I'm not big on "designing"
+ * Pretty new to JavaFX to, so some of the solutions and flows are probably a bit "swingy"
  */
 public class MainPane extends VBox {
 
     private Board board;
     private Consumer<int[][]> onSolveClick = null;
-    private Button solveBtn, clearBtn;
+    private Button solveBtn, clearBtn, saveBtn;
 
     public MainPane() {
         build();
@@ -26,7 +26,9 @@ public class MainPane extends VBox {
 
     private void build() {
         getChildren().add(buildButtonBar());
-        getChildren().add(board = new Board());
+        board = new Board();
+        board.setBoardChangedListener(this::boardModified);
+        getChildren().add(board);
     }
 
     private HBox buildButtonBar() {
@@ -36,6 +38,7 @@ public class MainPane extends VBox {
         buttonBar.setAlignment(Pos.CENTER);
 
         clearBtn = new Button("Clear");
+        clearBtn.setDisable(true);
         clearBtn.getStyleClass().add("clear-btn");
         clearBtn.setOnAction(this::clearBoard);
         buttonBar.getChildren().add(clearBtn);
@@ -44,15 +47,34 @@ public class MainPane extends VBox {
         openBtn.setOnAction(this::loadBoard);
         buttonBar.getChildren().add(openBtn);
 
-        var saveBtn = new Button("Save");
+        saveBtn = new Button("Save");
+        saveBtn.setDisable(true);
         saveBtn.setOnAction(this::saveBoard);
         buttonBar.getChildren().add(saveBtn);
 
         solveBtn = new Button("Solve");
+        solveBtn.setDisable(true);
         solveBtn.getStyleClass().add("solve-btn");
         solveBtn.setOnAction(this::solve);
         buttonBar.getChildren().add(solveBtn);
         return buttonBar;
+    }
+
+    private void boardModified() {
+        long numberCount = board.getNumberCount();
+        clearBtn.setDisable(true);
+        saveBtn.setDisable(true);
+        solveBtn.setDisable(true);
+        if (numberCount > 0) {
+            clearBtn.setDisable(false);
+            saveBtn.setDisable(false);
+        }
+
+        // A puzzle can't have a unique solution with less than 17
+        // starting clues according to something I googled :D
+        if (numberCount > 16 && numberCount < 81) {
+            solveBtn.setDisable(false);
+        }
     }
 
     public void clearBoard(ActionEvent event) {
@@ -86,16 +108,11 @@ public class MainPane extends VBox {
     }
 
     public void solve(ActionEvent event) {
+        clearBtn.setDisable(true);
+        solveBtn.setDisable(true);
         if (onSolveClick != null) {
-            enableButtons(false);
             onSolveClick.accept(board.getNumbers());
-            enableButtons(true);
         }
-    }
-
-    public void enableButtons(boolean b) {
-        clearBtn.setDisable(!b);
-        solveBtn.setDisable(!b);
     }
 }
 

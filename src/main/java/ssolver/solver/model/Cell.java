@@ -2,8 +2,15 @@ package ssolver.solver.model;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
+/**
+ * A sudoku cell class.
+ *
+ * The class holds a possible value (>0) and a set of "possible" choices for
+ * that cell.
+ *
+ * The methods should be more or less self explanatory.
+ */
 public class Cell {
 
     private Set<Integer> options;
@@ -61,6 +68,6 @@ public class Cell {
     }
 
     public interface CellValueChangeListener {
-        public void valueChanged(int row, int col, int value);
+        void valueChanged(int row, int col, int value);
     }
 }

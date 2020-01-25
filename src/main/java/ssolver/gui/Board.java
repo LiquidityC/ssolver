@@ -8,12 +8,16 @@ import ssolver.gui.widget.SingleNumberField;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.function.Predicate.not;
 
 public class Board extends GridPane implements ChangeListener<String> {
 
     private static SingleNumberField[][] inputFields = new SingleNumberField[9][9];
+    private Runnable boardChangedListener;
 
     public Board() {
         super();
@@ -39,6 +43,9 @@ public class Board extends GridPane implements ChangeListener<String> {
     @Override
     public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
         validate();
+        if (boardChangedListener != null) {
+            boardChangedListener.run();
+        }
     }
 
     private List<Integer> getRow(int row) {
@@ -55,6 +62,14 @@ public class Board extends GridPane implements ChangeListener<String> {
 
     private List<Integer> getCol(int col) {
         return Stream.of(inputFields[col]).filter(field -> field.getText().length() > 0).map(field -> Integer.valueOf(field.getText())).collect(Collectors.toList());
+    }
+
+    public long getNumberCount() {
+        return Stream.of(inputFields)
+                .flatMap(Stream::of)
+                .map(SingleNumberField::getText)
+                .filter(not(String::isEmpty))
+                .count();
     }
 
     /**
@@ -150,4 +165,9 @@ public class Board extends GridPane implements ChangeListener<String> {
             }
         }
     }
+
+    public void setBoardChangedListener(Runnable boardChangedListener) {
+        this.boardChangedListener = boardChangedListener;
+    }
+
 }

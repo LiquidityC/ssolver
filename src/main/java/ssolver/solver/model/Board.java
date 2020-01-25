@@ -7,6 +7,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * A sudoku board representation that offers methods to solve the puzzle
+ *
+ * It's a bit of a patch-as-you-go write up. But methods have been kept under 30 loc and the flow should be
+ * pretty readable although method ordering could probably be better. Not that that matters much with a modern IDE.
+ */
 public class Board {
 
     private Cell[][] cells = new Cell[9][9];
@@ -23,7 +29,7 @@ public class Board {
 
     private void cellChanged(int col, int row, int value) {
         if (value > 0) {
-            reduceOptionsinCol(col, value);
+            reduceOptionsInCol(col, value);
             reduceOptionsInRow(row, value);
             reduceOptionsInBox(col, row, value);
         }
@@ -47,17 +53,11 @@ public class Board {
         return numbers;
     }
 
-    public boolean isComplete() {
-        for (var col = 0; col < 9; ++col) {
-            for (var row = 0; row < 9; ++row) {
-                if (cells[col][row].getValue() ==  0) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
+    /**
+     * Checks all cells and sets the value for every cell that only
+     * has one possible choice.
+     * @return true if anything was changed
+     */
     public boolean setObviousChoices() {
         boolean changes = false;
         for (var col = 0; col < 9; col++) {
@@ -152,7 +152,7 @@ public class Board {
         return cellList;
     }
 
-    private void reduceOptionsinCol(int col, int value) {
+    private void reduceOptionsInCol(int col, int value) {
         Stream.of(cells[col]).forEach(cell -> cell.getOptions().remove(value));
     }
 
