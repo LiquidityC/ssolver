@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 public class Solver {
 
     private Consumer<int[][]> changeObserver;
+    private Runnable doneObserver;
+
     private int[][] numbers;
     private final Board board = new Board();
 
@@ -21,11 +23,17 @@ public class Solver {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                var changes = true;
-                while (changes) {
-                    board.reduceAllOptions();
-                    changes = board.setObviousChoices();
+                try {
+                    var changes = true;
+                    while (changes) {
+                        changes = board.checkUniqueOptions();
+                        changes = board.setObviousChoices() | changes;
+                    }
+                } catch (Exception e) {
+                    throw e;
+                } finally {
                     changeObserver.accept(board.getNumbers());
+                    doneObserver.run();
                 }
             }
         };
@@ -34,6 +42,10 @@ public class Solver {
 
     public void setChangeObserver(Consumer<int[][]> changeObserver) {
         this.changeObserver = changeObserver;
+    }
+
+    public void setDoneObserver(Runnable doneObserver) {
+        this.doneObserver = doneObserver;
     }
 
     private int[][] copy(int[][] numbers) {

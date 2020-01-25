@@ -2,11 +2,13 @@ package ssolver.solver.model;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class Cell {
 
     private Set<Integer> options;
     private int value;
+    private Consumer<Integer> valueChangeListener;
 
     public Cell() {
         this(0);
@@ -27,7 +29,7 @@ public class Cell {
             return false;
         }
         if (options.size() == 1) {
-            value = options.iterator().next();
+            setValue(options.iterator().next());
             return true;
         }
         return false;
@@ -46,5 +48,12 @@ public class Cell {
             this.value = value;
             options.clear();
         }
+        if (valueChangeListener != null) {
+            valueChangeListener.accept(value);
+        }
+    }
+
+    public void setValueChangeListener(Consumer<Integer> valueChangeListener) {
+        this.valueChangeListener = valueChangeListener;
     }
 }

@@ -45,6 +45,10 @@ public class App extends Application {
                 root.setBoard(newNumbers);
             });
         });
+        s.setDoneObserver(() -> {
+            root.enableButtons(true);
+        });
+        root.enableButtons(false);
         s.run();
     }
 

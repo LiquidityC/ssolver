@@ -18,7 +18,7 @@ public class MainPane extends VBox {
 
     private Board board;
     private Consumer<int[][]> onSolveClick = null;
-    private Button solveBtn;
+    private Button solveBtn, clearBtn;
 
     public MainPane() {
         build();
@@ -35,7 +35,7 @@ public class MainPane extends VBox {
         buttonBar.setPadding(new Insets(5, 5, 5, 5));
         buttonBar.setAlignment(Pos.CENTER);
 
-        var clearBtn = new Button("Clear");
+        clearBtn = new Button("Clear");
         clearBtn.getStyleClass().add("clear-btn");
         clearBtn.setOnAction(this::clearBoard);
         buttonBar.getChildren().add(clearBtn);
@@ -87,10 +87,13 @@ public class MainPane extends VBox {
 
     public void solve(ActionEvent event) {
         if (onSolveClick != null) {
-            solveBtn.setVisible(false);
             onSolveClick.accept(board.getNumbers());
-            solveBtn.setVisible(true);
         }
+    }
+
+    public void enableButtons(boolean b) {
+        clearBtn.setDisable(!b);
+        solveBtn.setDisable(!b);
     }
 }
 
