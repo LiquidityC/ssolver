@@ -4,15 +4,12 @@
 package ssolver;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ssolver.gui.MainPane;
 import ssolver.solver.Solver;
 
 import java.net.URL;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class App extends Application {
 
@@ -40,16 +37,7 @@ public class App extends Application {
 
     private void solve(int[][] numbers) {
         Solver s = new Solver(numbers);
-        s.setChangeObserver((int[][] newNumbers) -> {
-            Platform.runLater(() -> {
-                root.setBoard(newNumbers);
-            });
-        });
-        s.setDoneObserver(() -> {
-            root.enableButtons(true);
-        });
-        root.enableButtons(false);
-        s.run();
+        root.setBoard(s.solve());
     }
 
     public static Stage getPrimaryStage() {

@@ -2,10 +2,10 @@ package ssolver.solver.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Board {
 
@@ -14,16 +14,18 @@ public class Board {
     public Board() {
         for (var i = 0; i < 9; ++i) {
             for (var j = 0; j < 9; ++j) {
-                var cell = new Cell();
+                var cell = new Cell(i, j);
                 cell.setValueChangeListener(this::cellChanged);
                 cells[i][j] = cell;
             }
         }
     }
 
-    private void cellChanged(int value) {
+    private void cellChanged(int col, int row, int value) {
         if (value > 0) {
-            reduceAllOptions();
+            reduceOptionsinCol(col, value);
+            reduceOptionsInRow(row, value);
+            reduceOptionsInBox(col, row, value);
         }
     }
 
@@ -66,75 +68,50 @@ public class Board {
         return changes;
     }
 
-    public void reduceAllOptions() {
-        for (var col = 0; col < 9; col++) {
-            for (var row = 0; row < 9; row++) {
-                var value = cells[col][row].getValue();
-                if (value > 0) {
-                    reduceRow(row, value);
-                    reduceCol(col, value);
-                    reduceBox(col, row, value);
-                }
-            }
-        }
-    }
-
+    /**
+     * Check if an option for a cell within a substructure (row, col, box)
+     * is unique. If any unique is found it's applied.
+     * @return true or false depending on if any changes were made
+     */
     public boolean checkUniqueOptions() {
         boolean changes = false;
+
+        // Check cols
         for (var col = 0; col < 9; col++) {
             var cells = getCellsForCol(col);
             var uniques = uniqueOptionsFor(cells);
-            for (var cell : cells) {
-                for (var option : uniques) {
-                    if (cell.getOptions().contains(option)) {
-                        cell.setValue(option);
-                        changes = true;
-                    }
-                }
-            }
+            changes = applyUniqueOptionsFor(cells, uniques) | changes;
         }
+
+        // Check rows
         for (var row = 0; row < 9; row++) {
             var cells = getCellsForRow(row);
             var uniques = uniqueOptionsFor(cells);
-            for (var cell : cells) {
-                for (var option : uniques) {
-                    if (cell.getOptions().contains(option)) {
-                        cell.setValue(option);
-                        changes = true;
-                    }
-                }
-            }
+            changes = applyUniqueOptionsFor(cells, uniques) | changes;
         }
 
+        // Check boxes
         for (var col = 0; col < 3; col++) {
             for (var row = 0; row < 3; row++) {
                 var cells = getCellsForBox(col * 3, row * 3);
                 var uniques = uniqueOptionsFor(cells);
-                for (var cell : cells) {
-                    for (var option : uniques) {
-                        if (cell.getOptions().contains(option)) {
-                            cell.setValue(option);
-                            changes = true;
-                        }
-                    }
-                }
+                changes = applyUniqueOptionsFor(cells, uniques) | changes;
             }
         }
 
         return changes;
     }
 
+    /**
+     * Find unique options for the given list of cells
+     * @param cells the list of cells
+     * @return a list of integers that are unique options among the cells
+     */
     private List<Integer> uniqueOptionsFor(List<Cell> cells) {
-        var hitMap = new HashMap<Integer, Integer>();
-        for (var cell : cells) {
-            if (cell.getValue() > 0) {
-                continue;
-            }
-            for (var option : cell.getOptions()) {
-                Integer count = hitMap.getOrDefault(option, 0);
-                hitMap.put(option, count + 1);
-            }
-        }
+        var hitMap = cells.stream()
+                .filter(cell -> cell.getValue() <= 0)
+                .flatMap(cell -> cell.getOptions().stream())
+                .collect(Collectors.groupingBy(val -> val, Collectors.counting()));
 
         return hitMap.entrySet().stream()
                 .filter(entry -> entry.getValue() == 1)
@@ -142,19 +119,27 @@ public class Board {
                 .collect(Collectors.toList());
     }
 
-    public List<Cell> getCellsForCol(int col) {
+    private boolean applyUniqueOptionsFor(List<Cell> cells, List<Integer> uniques) {
+        for (var cell : cells) {
+            for (var number : uniques) {
+                if (cell.getOptions().contains(number)) {
+                    cell.setValue(number);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<Cell> getCellsForCol(int col) {
         return Arrays.asList(cells[col]);
     }
 
-    public List<Cell> getCellsForRow(int row) {
-        var cellList = new ArrayList<Cell>();
-        for (var col = 0; col < 9; col++) {
-            cellList.add(cells[col][row]);
-        }
-        return cellList;
+    private List<Cell> getCellsForRow(int row) {
+        return Stream.of(cells).map(col -> col[row]).collect(Collectors.toList());
     }
 
-    public List<Cell> getCellsForBox(int col, int row) {
+    private List<Cell> getCellsForBox(int col, int row) {
         col -= col % 3;
         row -= row % 3;
 
@@ -167,19 +152,15 @@ public class Board {
         return cellList;
     }
 
-    public void reduceCol(int col, int value) {
-        for (var cell : cells[col]) {
-            cell.getOptions().remove(value);
-        }
+    private void reduceOptionsinCol(int col, int value) {
+        Stream.of(cells[col]).forEach(cell -> cell.getOptions().remove(value));
     }
 
-    public void reduceRow(int row, int value) {
-        for (int col = 0; col < 9; ++col) {
-            cells[col][row].getOptions().remove(value);
-        }
+    private void reduceOptionsInRow(int row, int value) {
+        Stream.of(cells).map(col -> col[row]).forEach(cell -> cell.getOptions().remove(value));
     }
 
-    public void reduceBox(int col, int row, int value) {
+    private void reduceOptionsInBox(int col, int row, int value) {
         col -= col % 3;
         row -= row % 3;
 

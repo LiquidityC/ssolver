@@ -87,7 +87,9 @@ public class MainPane extends VBox {
 
     public void solve(ActionEvent event) {
         if (onSolveClick != null) {
+            enableButtons(false);
             onSolveClick.accept(board.getNumbers());
+            enableButtons(true);
         }
     }
 
