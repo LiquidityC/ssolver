@@ -107,6 +107,12 @@ public class MainPane extends VBox {
         }
     }
 
+    public void reloadBoard() {
+        if (board != null) {
+            board.validate();
+        }
+    }
+
     public void solve(ActionEvent event) {
         clearBtn.setDisable(true);
         solveBtn.setDisable(true);

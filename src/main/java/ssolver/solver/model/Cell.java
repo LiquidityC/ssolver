@@ -70,4 +70,12 @@ public class Cell {
     public interface CellValueChangeListener {
         void valueChanged(int row, int col, int value);
     }
+
+    public int getCol() {
+        return col;
+    }
+
+    public int getRow() {
+        return row;
+    }
 }

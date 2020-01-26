@@ -5,6 +5,10 @@ package ssolver;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import ssolver.gui.MainPane;
 import ssolver.solver.Solver;
@@ -36,8 +40,20 @@ public class App extends Application {
     }
 
     private void solve(int[][] numbers) {
-        Solver s = new Solver(numbers);
-        root.setBoard(s.solve());
+        Solver s = new Solver();
+        var result = s.solve(numbers);
+
+        if (result != null) {
+            root.setBoard(result);
+        } else {
+            showErrorMsg("That doesn't seem to be a valid puzzle");
+            root.reloadBoard();
+        }
+    }
+
+    private void showErrorMsg(String msg) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, msg);
+        alert.showAndWait();
     }
 
     public static Stage getPrimaryStage() {

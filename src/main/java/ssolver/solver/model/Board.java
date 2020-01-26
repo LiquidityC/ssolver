@@ -2,6 +2,7 @@ package ssolver.solver.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,6 +26,11 @@ public class Board {
                 cells[i][j] = cell;
             }
         }
+    }
+
+    public Board(int[][] numbers) {
+        this();
+        setNumbers(numbers);
     }
 
     private void cellChanged(int col, int row, int value) {
@@ -169,5 +175,20 @@ public class Board {
                 cells[col + ci][row + ri].getOptions().remove(value);
             }
         }
+    }
+
+    public Cell getCellWithLowestOptionCount() {
+        return Stream.of(cells)
+                .flatMap(Stream::of)
+                .filter(cell -> cell.getValue() <= 0)
+                .min(Comparator.comparing(cell -> cell.getOptions().size()))
+                .orElse(null);
+    }
+
+    public boolean isComplete() {
+        return Stream.of(cells)
+                .flatMap(Stream::of)
+                .filter(cell -> cell.getValue() > 0)
+                .count() == 81;
     }
 }

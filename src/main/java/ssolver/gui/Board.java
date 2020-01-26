@@ -95,7 +95,7 @@ public class Board extends GridPane implements ChangeListener<String> {
         return numbers;
     }
 
-    private void validate() {
+    void validate() {
         // Reset validation
         PseudoClass classError = PseudoClass.getPseudoClass("error");
         Stream.of(inputFields).flatMap(Stream::of).forEach(field -> field.pseudoClassStateChanged(classError, false));
